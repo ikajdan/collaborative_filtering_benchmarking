@@ -1,110 +1,187 @@
 from collections import defaultdict
+from tkinter import N
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-from surprise import SVD, Dataset, KNNBasic, Reader
+from surprise import SVD, Dataset, KNNWithMeans, Reader
 from surprise.model_selection import train_test_split
 
 
-# Load data from file
-def load_data(filename):
-    data = pd.read_csv(filename, sep=";", index_col=0)
-    df = data.stack().reset_index()
-    df.columns = ["item", "user", "rating"]
-    return df
+def precision_recall_at_n(predictions, n=10, threshold=3.5):
+    """
+    Calculate precision and recall at N for each user.
+    """
+    user_est_true = defaultdict(list)
+    for uid, _, true_r, est, _ in predictions:
+        user_est_true[uid].append((est, true_r))
+
+    precisions, recalls = {}, {}
+    for uid, user_ratings in user_est_true.items():
+        user_ratings.sort(key=lambda x: x[0], reverse=True)
+        n_rel = sum((true_r >= threshold) for _, true_r in user_ratings)
+        n_rel_and_rec = sum((true_r >= threshold) for _, true_r in user_ratings[:n])
+
+        precisions[uid] = n_rel_and_rec / n
+        recalls[uid] = n_rel_and_rec / n_rel if n_rel != 0 else 0
+
+    return precisions, recalls
 
 
-# Generate Top-N recommendations
-def get_top_n(predictions, n=10, threshold=4.0):
-    top_n = defaultdict(list)
-    for uid, iid, true_r, est, _ in predictions:
-        if est >= threshold:
-            top_n[uid].append((iid, est))
-    for uid, user_ratings in top_n.items():
-        user_ratings.sort(key=lambda x: x[1], reverse=True)
-        top_n[uid] = user_ratings[:n]
-    return top_n
+def load_csv():
+    """
+    Load data from CSV and prepare it for the Surprise library.
+    """
+    csv_file = pd.read_csv("data.csv", delimiter=";")
+    temp = np.delete(csv_file.to_numpy(), np.s_[0], axis=1)
+    ratings = temp.T.flatten()
 
+    users, movies = [], []
+    for i in range(50):
+        for j in range(20):
+            movies.append(j)
+            users.append(i)
 
-# Precision, Recall, and F1 calculations
-def precision_recall_at_n(top_n, relevant_ratings):
-    precisions = []
-    recalls = []
+    movies = np.array(movies)
+    users = np.array(users)
 
-    for uid, user_ratings in top_n.items():
-        n_rel = len(relevant_ratings[uid])
-        n_rec_k = len(user_ratings)
-        n_rel_and_rec_k = sum(
-            (iid in relevant_ratings[uid]) for (iid, _) in user_ratings
-        )
+    ratings_dict = {"userID": users, "itemID": movies, "rating": ratings}
+    df = pd.DataFrame(ratings_dict)
 
-        precision = n_rel_and_rec_k / n_rec_k if n_rec_k else 0
-        recall = n_rel_and_rec_k / n_rel if n_rel else 0
-
-        precisions.append(precision)
-        recalls.append(recall)
-
-    if precisions and recalls:
-        avg_precision = sum(precisions) / len(precisions)
-        avg_recall = sum(recalls) / len(recalls)
-        f1 = (
-            2 * (avg_precision * avg_recall) / (avg_precision + avg_recall)
-            if (avg_precision + avg_recall)
-            else 0
-        )
-    else:
-        avg_precision, avg_recall, f1 = 0, 0, 0
-
-    return avg_precision, avg_recall, f1
-
-
-# Main function
-def evaluate_models(filename):
-    df = load_data(filename)
-
-    # Define a reader to handle the rating scale
     reader = Reader(rating_scale=(1, 5))
-    data = Dataset.load_from_df(df[["user", "item", "rating"]], reader)
-
-    results = []
-    for missing_percentage in [0.25, 0.75]:
-        trainset, testset = train_test_split(data, test_size=missing_percentage)
-
-        # Models
-        algorithms = {
-            "KNN": KNNBasic(sim_options={"user_based": True}),
-            "SVD": SVD(),
-        }
-
-        # Relevant items for each user (ground truth)
-        relevant_ratings = defaultdict(set)
-        for uid, iid, true_r in testset:
-            if true_r >= 4.0:
-                relevant_ratings[uid].add(iid)
-
-        # Calculate precision, recall, and F1 for each model
-        for algo_name, algo in algorithms.items():
-            algo.fit(trainset)
-            predictions = algo.test(testset)
-
-            for n in range(10, 101, 10):
-                top_n = get_top_n(predictions, n=n)
-                precision, recall, f1 = precision_recall_at_n(top_n, relevant_ratings)
-
-                results.append(
-                    {
-                        "Algorithm": algo_name,
-                        "Missing %": missing_percentage,
-                        "N": n,
-                        "Precision": precision,
-                        "Recall": recall,
-                        "F1": f1,
-                    }
-                )
-
-    # Display results
-    results_df = pd.DataFrame(results)
-    print(results_df)
+    return Dataset.load_from_df(df[["userID", "itemID", "rating"]], reader)
 
 
-# Run the evaluation
-evaluate_models("data.csv")
+def evaluate_model(model, trainset, testset, N_list=range(10, 101, 5)):
+    """
+    Evaluate a model using precision, recall, and F1-score for different N values.
+    """
+    model.fit(trainset)
+    predictions = model.test(testset)
+
+    precision_list, recall_list, f1_list = [], [], []
+
+    for n in N_list:
+        precisions, recalls = precision_recall_at_n(predictions, n=n, threshold=4)
+        avg_precision = sum(prec for prec in precisions.values()) / len(precisions)
+        avg_recall = sum(rec for rec in recalls.values()) / len(recalls)
+        f1 = 2 * avg_precision * avg_recall / (avg_precision + avg_recall)
+
+        precision_list.append(avg_precision)
+        recall_list.append(avg_recall)
+        f1_list.append(f1)
+
+    return precision_list, recall_list, f1_list
+
+
+def plot_results(results_25, results_75, N_list, model_name):
+    """
+    Plot precision, recall, and F1 scores for both 25% and 75% missing ratings.
+    """
+    precision_list_25, recall_list_25, f1_list_25 = results_25
+    precision_list_75, recall_list_75, f1_list_75 = results_75
+
+    _, axes = plt.subplots(1, 3, figsize=(18, 6))
+
+    # Plot Precision
+    axes[0].plot(
+        N_list, precision_list_25, marker="o", label=f"{model_name} - Precision (25%)"
+    )
+    axes[0].plot(
+        N_list, precision_list_75, marker="s", label=f"{model_name} - Precision (75%)"
+    )
+    axes[0].set_title("Precision at N")
+    axes[0].set_xlabel("N")
+    axes[0].set_ylabel("Precision")
+    axes[0].legend()
+    axes[0].grid(True)
+
+    # Plot Recall
+    axes[1].plot(
+        N_list, recall_list_25, marker="o", label=f"{model_name} - Recall (25%)"
+    )
+    axes[1].plot(
+        N_list, recall_list_75, marker="s", label=f"{model_name} - Recall (75%)"
+    )
+    axes[1].set_title("Recall at N")
+    axes[1].set_xlabel("N")
+    axes[1].set_ylabel("Recall")
+    axes[1].legend()
+    axes[1].grid(True)
+
+    # Plot F1 Score
+    axes[2].plot(N_list, f1_list_25, marker="o", label=f"{model_name} - F1 Score (25%)")
+    axes[2].plot(N_list, f1_list_75, marker="s", label=f"{model_name} - F1 Score (75%)")
+    axes[2].set_title("F1 Score at N")
+    axes[2].set_xlabel("N")
+    axes[2].set_ylabel("F1 Score")
+    axes[2].legend()
+    axes[2].grid(True)
+
+    plt.tight_layout()
+    plt.show()
+
+
+def main():
+    """
+    Load data, split into training and test sets, and evaluate models.
+    """
+    data = load_csv()
+
+    N_list = range(1, 101, 5)  # To avoid zero, start from 1
+
+    # 25% missing ratings
+    train_set, test_set = train_test_split(data, test_size=0.25, random_state=22)
+
+    # Best K
+    best_k_25 = None
+    best_f1_25 = 0
+    for k in range(5, 51, 5):  # Trying different k values from 5 to 50
+        knn_model = KNNWithMeans(
+            k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
+        )
+        knn_results_25 = evaluate_model(knn_model, train_set, test_set, N_list=N_list)
+        avg_f1_25 = np.mean(knn_results_25[2])
+
+        if avg_f1_25 > best_f1_25:
+            best_f1_25 = avg_f1_25
+            best_k_25 = k
+
+    print(
+        f"Best k for KNN model with 25% missing ratings: {best_k_25} with F1 Score: {best_f1_25}"
+    )
+
+    svd_model = SVD(random_state=3)
+    svd_results_25 = evaluate_model(svd_model, train_set, test_set, N_list=N_list)
+
+    # 75% missing ratings
+    train_set, test_set = train_test_split(data, test_size=0.75, random_state=22)
+
+    # Best K
+    best_k_75 = None
+    best_f1_75 = 0
+    for k in range(5, 51, 5):
+        knn_model = KNNWithMeans(
+            k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
+        )
+        knn_results_75 = evaluate_model(knn_model, train_set, test_set, N_list=N_list)
+        avg_f1_75 = np.mean(knn_results_75[2])
+
+        if avg_f1_75 > best_f1_75:
+            best_f1_75 = avg_f1_75
+            best_k_75 = k
+
+    print(
+        f"Best k for KNN model with 75% missing ratings: {best_k_75} with F1 Score: {best_f1_75}"
+    )
+
+    svd_model = SVD(random_state=3)
+    svd_results_75 = evaluate_model(svd_model, train_set, test_set, N_list=N_list)
+
+    # Plot results for both 25% and 75% missing ratings
+    plot_results(knn_results_25, knn_results_75, N_list, "KNN")
+    plot_results(svd_results_25, svd_results_75, N_list, "SVD")
+
+
+if __name__ == "__main__":
+    main()
