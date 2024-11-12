@@ -4,6 +4,7 @@ from tkinter import N
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from surprise import SVD, Dataset, KNNWithMeans, Reader
 from surprise.model_selection import train_test_split
 
@@ -81,44 +82,48 @@ def plot_results(results_25, results_75, N_list, model_name):
     precision_list_25, recall_list_25, f1_list_25 = results_25
     precision_list_75, recall_list_75, f1_list_75 = results_75
 
+    sns.set(style="whitegrid")
+    palette = sns.color_palette("muted")
+
     _, axes = plt.subplots(1, 3, figsize=(18, 6))
 
-    # Plot Precision
     axes[0].plot(
-        N_list, precision_list_25, marker="o", label=f"{model_name} - Precision (25%)"
+        N_list, precision_list_25, marker="o", color=palette[0], label="Precision (25%)"
     )
     axes[0].plot(
-        N_list, precision_list_75, marker="s", label=f"{model_name} - Precision (75%)"
+        N_list, precision_list_75, marker="s", color=palette[1], label="Precision (75%)"
     )
-    axes[0].set_title("Precision at N")
-    axes[0].set_xlabel("N")
-    axes[0].set_ylabel("Precision")
+    axes[0].set_title("Precision at N", fontsize=14)
+    axes[0].set_xlabel("N", fontsize=12)
+    axes[0].set_ylabel("Precision", fontsize=12)
     axes[0].legend()
     axes[0].grid(True)
 
-    # Plot Recall
     axes[1].plot(
-        N_list, recall_list_25, marker="o", label=f"{model_name} - Recall (25%)"
+        N_list, recall_list_25, marker="o", color=palette[2], label="Recall (25%)"
     )
     axes[1].plot(
-        N_list, recall_list_75, marker="s", label=f"{model_name} - Recall (75%)"
+        N_list, recall_list_75, marker="s", color=palette[3], label="Recall (75%)"
     )
-    axes[1].set_title("Recall at N")
-    axes[1].set_xlabel("N")
-    axes[1].set_ylabel("Recall")
+    axes[1].set_title("Recall at N", fontsize=14)
+    axes[1].set_xlabel("N", fontsize=12)
+    axes[1].set_ylabel("Recall", fontsize=12)
     axes[1].legend()
     axes[1].grid(True)
 
-    # Plot F1 Score
-    axes[2].plot(N_list, f1_list_25, marker="o", label=f"{model_name} - F1 Score (25%)")
-    axes[2].plot(N_list, f1_list_75, marker="s", label=f"{model_name} - F1 Score (75%)")
-    axes[2].set_title("F1 Score at N")
-    axes[2].set_xlabel("N")
-    axes[2].set_ylabel("F1 Score")
+    axes[2].plot(
+        N_list, f1_list_25, marker="o", color=palette[4], label="F1 Score (25%)"
+    )
+    axes[2].plot(
+        N_list, f1_list_75, marker="s", color=palette[5], label="F1 Score (75%)"
+    )
+    axes[2].set_title("F1 Score at N", fontsize=14)
+    axes[2].set_xlabel("N", fontsize=12)
+    axes[2].set_ylabel("F1 Score", fontsize=12)
     axes[2].legend()
     axes[2].grid(True)
 
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
 
 

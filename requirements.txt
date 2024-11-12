@@ -14,6 +14,7 @@ pytz==2024.2
 scikit-learn==1.5.2
 scikit-surprise==1.1.4
 scipy==1.14.1
+seaborn==0.13.2
 six==1.16.0
 threadpoolctl==3.5.0
 tzdata==2024.2

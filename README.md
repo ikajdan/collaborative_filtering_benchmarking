@@ -1,6 +1,6 @@
 # Collaborative Filtering Benchmarking
 
-This repository contains the solution for collaborative filtering tasks, implemented with Python’s Surprise library. The project includes optimizing user-based K-Nearest Neighbors (K-N) by tuning the number of neighbors (K) to minimize Mean Absolute Error (MAE) under different levels of sparsity, addressing sparsity issues with SVD (Singular Value Decomposition) and its Funk variant, and comparing the performance of K-NN and SVD in generating Top-N recommendations with varying levels of missing ratings.
+This repository contains the solution for collaborative filtering tasks, implemented with Python’s Surprise library. The project includes optimizing user-based K-Nearest Neighbors (K-NN) by tuning the number of neighbors (K) to minimize Mean Absolute Error (MAE) under different levels of sparsity, addressing sparsity issues with SVD (Singular Value Decomposition) and its Funk variant, and comparing the performance of K-NN and SVD in generating Top-N recommendations with varying levels of missing ratings.
 
 ## Setup
 
@@ -48,7 +48,7 @@ The MAE is consistently lower for the 25% missing ratings case across all K valu
 
 <br>
 <div align="center">
-  <img src="figures/task1.png" width="900" height="auto"/>
+  <img src="figures/task1.png" width="800" height="auto"/>
   <br><br>
   <em>MAE vs. K for 25% and 75% missing ratings.</em>
 </div>
@@ -56,8 +56,8 @@ The MAE is consistently lower for the 25% missing ratings case across all K valu
 
 For both sparsity levels, it MAE decreases as K increases, reaching a minimum before leveling off or slightly increasing. For this dataset the optimal K values are:
 
-- 25% missing ratings: the lowest MAE = 0.779 occurs around K = 22.
-- 75% missing ratings: the lowest MAE = 0.822 occurs around K = 24.
+- 25% missing ratings: 22 with MAE equal to 0.779.
+- 75% missing ratings: 24 with MAE equal to 0.822.
 
 ## Task 2
 
@@ -73,17 +73,9 @@ In case of 25% missing ratings, Funk SVD yields a higher MAE than K-NN, while in
 
 <br>
 <div align="center">
-  <img src="figures/task2_25.png" width="900" height="auto"/>
+  <img src="figures/task2.png" width="800" height="auto"/>
   <br><br>
-  <em>MEA, Precision, Recall, and F1 comparison between K-NN and Funk SVD (25% missing ratings).</em>
-</div>
-<br>
-
-<br>
-<div align="center">
-  <img src="figures/task2_75.png" width="900" height="auto"/>
-  <br><br>
-  <em>MEA, Precision, Recall, and F1 comparison between K-NN and Funk SVD (75% missing ratings).</em>
+  <em>MAE, Precision, Recall, and F1 Score comparison between K-NN and Funk SVD.</em>
 </div>
 <br>
 
@@ -102,12 +94,13 @@ In case of 25% missing ratings, Funk SVD yields a higher MAE than K-NN, while in
 As N increases, precision decreases while recall remains high. With higher N, the model recommends more items, which increases recall (capturing more relevant items) but reduces precision (introducing more irrelevant items). For both 25% and 75% missing ratings, recall stays high, indicating that relevant items are mostly retrieved, while precision drops with larger N. The F1 score reflects this trade-off, peaking at smaller N and decreasing as N grows, particularly under higher sparsity. Both K-NN and SVD models show similar performance, suggesting that their predictive capabilities are comparable in this scenario.
 
 Best K for K-NN model:
-- 25% missing ratings: 20 with F1 Score: 0.138
-- 75% missing ratings: 5 with F1 Score: 0.261
+
+- 25% missing ratings: 20 with F1 Score equal to 0.138.
+- 75% missing ratings: 5 with F1 Score: equal to 0.261.
 
 <br>
 <div align="center">
-  <img src="figures/task3_knn.png" width="1600" height="auto"/>
+  <img src="figures/task3_knn.png" width="1200" height="auto"/>
   <br><br>
   <em>Precision, Recall, and F1 Score for K-NN with 25% and 75% missing ratings.</em>
 </div>
@@ -115,7 +108,7 @@ Best K for K-NN model:
 
 <br>
 <div align="center">
-  <img src="figures/task3_svd.png" width="1600" height="auto"/>
+  <img src="figures/task3_svd.png" width="1200" height="auto"/>
   <br><br>
   <em>Precision, Recall, and F1 Score for SVD with 25% and 75% missing ratings.</em>
 </div>

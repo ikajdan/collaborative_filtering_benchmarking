@@ -3,6 +3,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from surprise import SVD, Dataset, KNNWithMeans, Reader
 from surprise.accuracy import mae
 from surprise.model_selection import train_test_split
@@ -61,21 +62,32 @@ def calculate_f1_score(precision, recall):
     )
 
 
-def plot_comparison_metrics(metrics):
+def plot_comparison_metrics(metrics_25, metrics_75):
     """
-    Plot comparison metrics in a 2 by 2 grid.
+    Plot comparison metrics.
     """
-    fig, axs = plt.subplots(2, 2, figsize=(12, 10))
-    colors = ["brown", "orange"]
-
     metrics_titles = ["MAE", "Precision", "Recall", "F1 Score"]
-    for i, metric in enumerate(metrics_titles):
-        row, col = divmod(i, 2)
-        axs[row, col].bar(
-            ["SVD", "KNN"], [metrics["SVD"][i], metrics["KNN"][i]], color=colors
-        )
-        axs[row, col].set_title(f"{metric} Comparison")
-        axs[row, col].set_ylabel(metric)
+    svd_25 = metrics_25["SVD"]
+    knn_25 = metrics_25["KNN"]
+    svd_75 = metrics_75["SVD"]
+    knn_75 = metrics_75["KNN"]
+
+    sns.set(style="whitegrid")
+    plt.figure(figsize=(12, 8))
+
+    x = np.arange(len(metrics_titles))
+    width = 0.2
+
+    palette = sns.color_palette("Set2")
+    plt.bar(x - 1.5 * width, svd_25, width, label="SVD (25%)", color=palette[0])
+    plt.bar(x - 0.5 * width, knn_25, width, label="K-NN (25%)", color=palette[1])
+    plt.bar(x + 0.5 * width, svd_75, width, label="SVD (75%)", color=palette[2])
+    plt.bar(x + 1.5 * width, knn_75, width, label="K-NN (75%)", color=palette[3])
+
+    plt.xlabel("Metrics", fontsize=14)
+    plt.ylabel("Score", fontsize=14)
+    plt.xticks(ticks=x, labels=metrics_titles, fontsize=12)
+    plt.legend(title="Models and Test Ratios", title_fontsize="13", fontsize=11)
 
     plt.tight_layout()
     plt.show()
@@ -101,42 +113,33 @@ def evaluate_model(algo, train_set, test_set, n=5, threshold=4):
 def main():
     data = load_csv()
 
-    # Split dataset
-    train_set, test_set = train_test_split(
-        data, test_size=0.75, random_state=22
-    )  # 75% missing ratings
+    # Metrics storage for both split cases
+    metrics_25 = {"SVD": [], "KNN": []}
+    metrics_75 = {"SVD": [], "KNN": []}
 
-    # SVD Model Evaluation
-    algo_svd = SVD(random_state=3)
-    mae_svd, pre_svd, recall_svd, f1_svd = evaluate_model(algo_svd, train_set, test_set)
+    for test_size, metrics in [(0.25, metrics_25), (0.75, metrics_75)]:
+        # Split dataset based on the specified test size
+        train_set, test_set = train_test_split(
+            data, test_size=test_size, random_state=22
+        )
 
-    # KNN Model Evaluation
-    sim_options_knn = {
-        "name": "pearson",
-        "user_based": True,
-    }
-    algo_knn = KNNWithMeans(k=10, sim_options=sim_options_knn, verbose=False)
-    mae_knn, pre_knn, recall_knn, f1_knn = evaluate_model(algo_knn, train_set, test_set)
+        # SVD Model Evaluation
+        algo_svd = SVD(random_state=3)
+        mae_svd, pre_svd, recall_svd, f1_svd = evaluate_model(
+            algo_svd, train_set, test_set
+        )
+        metrics["SVD"] = [mae_svd, pre_svd, recall_svd, f1_svd]
 
-    # Print results
-    print("SVD Model Results:")
-    print(f"MAE: {mae_svd}")
-    print(f"Precision: {pre_svd}")
-    print(f"Recall: {recall_svd}")
-    print(f"F1 Score: {f1_svd}")
-
-    print("\nKNN Model Results:")
-    print(f"MAE: {mae_knn}")
-    print(f"Precision: {pre_knn}")
-    print(f"Recall: {recall_knn}")
-    print(f"F1 Score: {f1_knn}")
+        # KNN Model Evaluation
+        sim_options_knn = {"name": "pearson", "user_based": True}
+        algo_knn = KNNWithMeans(k=10, sim_options=sim_options_knn, verbose=False)
+        mae_knn, pre_knn, recall_knn, f1_knn = evaluate_model(
+            algo_knn, train_set, test_set
+        )
+        metrics["KNN"] = [mae_knn, pre_knn, recall_knn, f1_knn]
 
     # Plot results
-    metrics = {
-        "SVD": [mae_svd, pre_svd, recall_svd, f1_svd],
-        "KNN": [mae_knn, pre_knn, recall_knn, f1_knn],
-    }
-    plot_comparison_metrics(metrics)
+    plot_comparison_metrics(metrics_25, metrics_75)
 
 
 if __name__ == "__main__":

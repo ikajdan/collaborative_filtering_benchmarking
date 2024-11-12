@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-from surprise import Dataset, KNNBasic, accuracy
+import seaborn as sns
+from surprise import Dataset, KNNBasic, Reader, accuracy
 from surprise.model_selection import train_test_split
-from surprise.reader import Reader
 
 
 def main():
@@ -11,7 +11,6 @@ def main():
 
     test_sizes = [0.25, 0.75]
     mae_results = {0.25: [], 0.75: []}
-
     k_values = range(1, 50)
 
     for test_size in test_sizes:
@@ -20,21 +19,31 @@ def main():
         for k in k_values:
             algo = KNNBasic(k=k, sim_options={"user_based": True})
             algo.fit(train_set)
-
             predictions = algo.test(test_set)
-
             mae = accuracy.mae(predictions, verbose=False)
             mae_results[test_size].append(mae)
 
-    plt.figure(figsize=(12, 6))
+    sns.set(style="whitegrid")
+    plt.figure(figsize=(14, 7))
+    sns.lineplot(
+        x=k_values,
+        y=mae_results[0.25],
+        label="25% Missing Ratings",
+        marker="o",
+        color="b",
+    )
+    sns.lineplot(
+        x=k_values,
+        y=mae_results[0.75],
+        label="75% Missing Ratings",
+        marker="s",
+        color="orange",
+    )
 
-    plt.plot(k_values, mae_results[0.25], label="25% Missing Ratings", marker="o")
-    plt.plot(k_values, mae_results[0.75], label="75% Missing Ratings", marker="s")
-
-    plt.xlabel("K (Number of Neighbors)")
-    plt.ylabel("MAE (Mean Absolute Error)")
-    plt.legend()
-    plt.grid()
+    plt.xlabel("K (Number of Neighbors)", fontsize=14)
+    plt.ylabel("MAE (Mean Absolute Error)", fontsize=14)
+    plt.legend(title="Dataset Split", loc="upper right", fontsize=12)
+    plt.grid(visible=True)
 
     plt.show()
 
