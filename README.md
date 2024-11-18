@@ -44,7 +44,7 @@ unzip ml-100k.zip
 
 ---
 
-The MAE is consistently lower for the 25% missing ratings case across all K values. This is expected, as more data generally leads to better predictive accuracy. In the case of 75% missing ratings, the algorithm struggles with sparsity, since fewer neighbors have overlapping ratings with the target user, leading to less reliable recommendations. Therefore, higher data sparsity may benefit from larger neighborhoods to aggregate more data points and reduce error.
+The MAE is consistently lower for the 25% missing ratings case across all K values. This is expected, as more data generally leads to better predictive accuracy. In the case of 75% missing ratings, the algorithm struggles with sparsity, as fewer neighbors have overlapping ratings with the target user, leading to less reliable recommendations. Therefore, higher data sparsity may benefit from larger neighborhoods to aggregate more data points and reduce errors.
 
 <br>
 <div align="center">
@@ -54,7 +54,7 @@ The MAE is consistently lower for the 25% missing ratings case across all K valu
 </div>
 <br>
 
-For both sparsity levels, it MAE decreases as K increases, reaching a minimum before leveling off or slightly increasing. For this dataset the optimal K values are:
+For both sparsity levels, the MAE decreases as K increases, reaching a minimum before leveling off. For this dataset the optimal K values are:
 
 - 25% missing ratings: 22 with MAE equal to 0.779.
 - 75% missing ratings: 24 with MAE equal to 0.822.

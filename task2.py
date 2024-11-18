@@ -72,7 +72,7 @@ def plot_comparison_metrics(metrics_25, metrics_75):
     svd_75 = metrics_75["SVD"]
     knn_75 = metrics_75["KNN"]
 
-    sns.set(style="whitegrid")
+    sns.set_theme(style="whitegrid")
     plt.figure(figsize=(12, 8))
 
     x = np.arange(len(metrics_titles))

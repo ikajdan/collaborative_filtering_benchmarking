@@ -75,14 +75,14 @@ def evaluate_model(model, trainset, testset, N_list=range(10, 101, 5)):
     return precision_list, recall_list, f1_list
 
 
-def plot_results(results_25, results_75, N_list, model_name):
+def plot_results(results_25, results_75, N_list):
     """
     Plot precision, recall, and F1 scores for both 25% and 75% missing ratings.
     """
     precision_list_25, recall_list_25, f1_list_25 = results_25
     precision_list_75, recall_list_75, f1_list_75 = results_75
 
-    sns.set(style="whitegrid")
+    sns.set_theme(style="whitegrid")
     palette = sns.color_palette("muted")
 
     _, axes = plt.subplots(1, 3, figsize=(18, 6))
@@ -128,12 +128,9 @@ def plot_results(results_25, results_75, N_list, model_name):
 
 
 def main():
-    """
-    Load data, split into training and test sets, and evaluate models.
-    """
     data = load_csv()
 
-    N_list = range(1, 101, 5)  # To avoid zero, start from 1
+    N_list = range(1, 101, 5)
 
     # 25% missing ratings
     train_set, test_set = train_test_split(data, test_size=0.25, random_state=22)
@@ -141,7 +138,7 @@ def main():
     # Best K
     best_k_25 = None
     best_f1_25 = 0
-    for k in range(5, 51, 5):  # Trying different k values from 5 to 50
+    for k in range(5, 51, 5):
         knn_model = KNNWithMeans(
             k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
         )
@@ -184,8 +181,8 @@ def main():
     svd_results_75 = evaluate_model(svd_model, train_set, test_set, N_list=N_list)
 
     # Plot results for both 25% and 75% missing ratings
-    plot_results(knn_results_25, knn_results_75, N_list, "KNN")
-    plot_results(svd_results_25, svd_results_75, N_list, "SVD")
+    plot_results(knn_results_25, knn_results_75, N_list)
+    plot_results(svd_results_25, svd_results_75, N_list)
 
 
 if __name__ == "__main__":
