@@ -2,35 +2,10 @@ from collections import defaultdict
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import seaborn as sns
 from surprise import SVD, Dataset, KNNWithMeans, Reader
 from surprise.accuracy import mae
 from surprise.model_selection import train_test_split
-
-
-def load_csv():
-    """
-    Load data from CSV and prepare it for the Surprise library.
-    """
-    csv_file = pd.read_csv("data.csv", delimiter=";")
-    temp = np.delete(csv_file.to_numpy(), np.s_[0], axis=1)
-    ratings = temp.T.flatten()
-
-    users, movies = [], []
-    for i in range(50):
-        for j in range(20):
-            movies.append(j)
-            users.append(i)
-
-    movies = np.array(movies)
-    users = np.array(users)
-
-    ratings_dict = {"userID": users, "itemID": movies, "rating": ratings}
-    df = pd.DataFrame(ratings_dict)
-
-    reader = Reader(rating_scale=(1, 5))
-    return Dataset.load_from_df(df[["userID", "itemID", "rating"]], reader)
 
 
 def precision_recall_at_n(predictions, n=10, threshold=3.5):
@@ -100,7 +75,7 @@ def evaluate_model(algo, train_set, test_set, n=5, threshold=4):
     algo.fit(train_set)
     predictions = algo.test(test_set)
 
-    mae_score = mae(predictions)
+    mae_score = mae(predictions, verbose=False)
     precisions, recalls = precision_recall_at_n(predictions, n=n, threshold=threshold)
 
     precision_avg = np.mean(list(precisions.values()))
@@ -111,7 +86,9 @@ def evaluate_model(algo, train_set, test_set, n=5, threshold=4):
 
 
 def main():
-    data = load_csv()
+    reader = Reader(line_format="user item rating timestamp", sep="\t")
+    data = Dataset.load_from_file("./ml-100k/u.data", reader=reader)
+    # data = Dataset.load_builtin("ml-100k")
 
     # Metrics storage for both split cases
     metrics_25 = {"SVD": [], "KNN": []}

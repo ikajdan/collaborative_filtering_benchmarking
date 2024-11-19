@@ -64,18 +64,18 @@ For both sparsity levels, the MAE decreases as K increases, reaching a minimum b
 <details>
   <summary>Task Description</summary><br>
 
-  Mitigation of sparsity problem: show how SVD (Singular Value Decomposition), the Funk variant, can provide a better MAE than user-based K-NN using the provided [data](data.csv).
+  Mitigation of sparsity problem: show how SVD (Singular Value Decomposition), the Funk variant, can provide a better MAE than user-based K-NN using the provided [dataset](https://grouplens.org/datasets/movielens/100k/).
 </details>
 
 ---
 
-In case of 25% missing ratings, Funk SVD yields a higher MAE than K-NN, while in the 75% missing ratings case, Funk SVD outperforms K-NN. This suggests that SVD is more effective in handling high sparsity, as it can better generalize from the data and make more accurate predictions. The precision, recall, and F1 scores also show that SVD performs better than K-NN in both cases, indicating that SVD is more effective in capturing relevant items and making accurate recommendations.
+In both cases, 25% and 75% missing ratings, Funk SVD outperforms K-NN. This suggests that SVD is more effective in handling high sparsity, as it can better generalize from the data and make more accurate predictions. The precision, recall, and F1 scores also show that SVD performs better than K-NN in both cases, indicating that SVD is more effective in capturing relevant items and making accurate recommendations.
 
 <br>
 <div align="center">
   <img src="figures/task2.png" width="800" height="auto"/>
   <br><br>
-  <em>MAE, Precision, Recall, and F1 Score comparison between K-NN and Funk SVD.</em>
+  <em>MAE, Precision, Recall, and F1 Score comparison between SVD and K-NN for 25% and 75% missing ratings.</em>
 </div>
 <br>
 
@@ -95,8 +95,8 @@ As N increases, precision decreases while recall remains high. With higher N, th
 
 Best K for K-NN model:
 
-- 25% missing ratings: 20 with F1 Score equal to 0.138.
-- 75% missing ratings: 5 with F1 Score: equal to 0.261.
+- 25% missing ratings: 45 with F1 Score equal to 0.426.
+- 75% missing ratings: 50 with F1 Score: equal to 0.538.
 
 <br>
 <div align="center">

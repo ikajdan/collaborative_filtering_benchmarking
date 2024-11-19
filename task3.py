@@ -1,9 +1,7 @@
 from collections import defaultdict
-from tkinter import N
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import seaborn as sns
 from surprise import SVD, Dataset, KNNWithMeans, Reader
 from surprise.model_selection import train_test_split
@@ -27,30 +25,6 @@ def precision_recall_at_n(predictions, n=10, threshold=3.5):
         recalls[uid] = n_rel_and_rec / n_rel if n_rel != 0 else 0
 
     return precisions, recalls
-
-
-def load_csv():
-    """
-    Load data from CSV and prepare it for the Surprise library.
-    """
-    csv_file = pd.read_csv("data.csv", delimiter=";")
-    temp = np.delete(csv_file.to_numpy(), np.s_[0], axis=1)
-    ratings = temp.T.flatten()
-
-    users, movies = [], []
-    for i in range(50):
-        for j in range(20):
-            movies.append(j)
-            users.append(i)
-
-    movies = np.array(movies)
-    users = np.array(users)
-
-    ratings_dict = {"userID": users, "itemID": movies, "rating": ratings}
-    df = pd.DataFrame(ratings_dict)
-
-    reader = Reader(rating_scale=(1, 5))
-    return Dataset.load_from_df(df[["userID", "itemID", "rating"]], reader)
 
 
 def evaluate_model(model, trainset, testset, N_list=range(10, 101, 5)):
@@ -128,7 +102,9 @@ def plot_results(results_25, results_75, N_list):
 
 
 def main():
-    data = load_csv()
+    reader = Reader(line_format="user item rating timestamp", sep="\t")
+    data = Dataset.load_from_file("./ml-100k/u.data", reader=reader)
+    # data = Dataset.load_builtin("ml-100k")
 
     N_list = range(1, 101, 5)
 
@@ -138,7 +114,7 @@ def main():
     # Best K
     best_k_25 = None
     best_f1_25 = 0
-    for k in range(5, 51, 5):
+    for k in range(1, 101, 5):
         knn_model = KNNWithMeans(
             k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
         )
@@ -162,7 +138,7 @@ def main():
     # Best K
     best_k_75 = None
     best_f1_75 = 0
-    for k in range(5, 51, 5):
+    for k in range(1, 101, 5):
         knn_model = KNNWithMeans(
             k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
         )
