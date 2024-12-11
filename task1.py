@@ -43,7 +43,9 @@ def main():
     k_values = range(1, 51)
 
     for test_size in test_sizes:
-        train_set, test_set = train_test_split(data, test_size=test_size)
+        train_set, test_set = train_test_split(
+            data, test_size=test_size, random_state=42
+        )
 
         for k in k_values:
             algo = KNNBasic(k=k, sim_options={"user_based": True})
