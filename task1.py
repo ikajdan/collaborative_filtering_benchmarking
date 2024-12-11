@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
-from surprise import Dataset, KNNBasic, Reader, accuracy
+from surprise import Dataset, KNNWithMeans, Reader, accuracy
 from surprise.model_selection import train_test_split
 
 
@@ -48,7 +48,7 @@ def main():
         )
 
         for k in k_values:
-            algo = KNNBasic(k=k, sim_options={"user_based": True})
+            algo = KNNWithMeans(k=k, sim_options={"user_based": True})
             algo.fit(train_set)
             predictions = algo.test(test_set)
             mae = accuracy.mae(predictions, verbose=False)
