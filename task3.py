@@ -106,44 +106,32 @@ def main():
     data = Dataset.load_from_file("./ml-100k/u.data", reader=reader)
     # data = Dataset.load_builtin("ml-100k")
 
-    N_list = range(1, 101, 5)
+    test_sizes = [0.25, 0.75]
+    k_values = [58, 55]  # Best k values as per task 1
+    n_list = range(1, 101, 5)
+    results = {"knn": {}, "svd": {}}
 
-    # 25% missing ratings
-    train_set, test_set = train_test_split(data, test_size=0.25, random_state=42)
+    for test_size, k in zip(test_sizes, k_values):
+        train_set, test_set = train_test_split(
+            data, test_size=test_size, random_state=42
+        )
 
-    k = 58  # As per task 1
-    knn_model = KNNWithMeans(
-        k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
-    )
-    knn_results_25 = evaluate_model(knn_model, train_set, test_set, N_list=N_list)
-    avg_f1_25 = np.mean(knn_results_25[2])
+        knn_model = KNNWithMeans(
+            k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
+        )
+        knn_results = evaluate_model(knn_model, train_set, test_set, N_list=n_list)
+        results["knn"][test_size] = knn_results
+        avg_f1_knn = np.mean(knn_results[2])
+        print(
+            f"Best k for KNN model with {int(test_size * 100)}% missing ratings: {k} with F1 Score: {avg_f1_knn}"
+        )
 
-    print(
-        f"Best k for KNN model with 25% missing ratings: {k} with F1 Score: {avg_f1_25}"
-    )
+        svd_model = SVD(random_state=3)
+        svd_results = evaluate_model(svd_model, train_set, test_set, N_list=n_list)
+        results["svd"][test_size] = svd_results
 
-    svd_model = SVD(random_state=3)
-    svd_results_25 = evaluate_model(svd_model, train_set, test_set, N_list=N_list)
-
-    # 75% missing ratings
-    train_set, test_set = train_test_split(data, test_size=0.75, random_state=42)
-
-    k = 55  # As per task 1
-    knn_model = KNNWithMeans(
-        k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
-    )
-    knn_results_75 = evaluate_model(knn_model, train_set, test_set, N_list=N_list)
-    avg_f1_75 = np.mean(knn_results_75[2])
-
-    print(
-        f"Best k for KNN model with 75% missing ratings: {k} with F1 Score: {avg_f1_75}"
-    )
-
-    svd_model = SVD(random_state=3)
-    svd_results_75 = evaluate_model(svd_model, train_set, test_set, N_list=N_list)
-
-    plot_results(knn_results_25, knn_results_75, N_list)
-    plot_results(svd_results_25, svd_results_75, N_list)
+    plot_results(results["knn"][0.25], results["knn"][0.75], n_list)
+    plot_results(results["svd"][0.25], results["svd"][0.75], n_list)
 
 
 if __name__ == "__main__":
