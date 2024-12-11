@@ -109,54 +109,39 @@ def main():
     N_list = range(1, 101, 5)
 
     # 25% missing ratings
-    train_set, test_set = train_test_split(data, test_size=0.25, random_state=22)
+    train_set, test_set = train_test_split(data, test_size=0.25, random_state=42)
 
-    # Best K
-    best_k_25 = None
-    best_f1_25 = 0
-    for k in range(1, 101, 5):
-        knn_model = KNNWithMeans(
-            k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
-        )
-        knn_results_25 = evaluate_model(knn_model, train_set, test_set, N_list=N_list)
-        avg_f1_25 = np.mean(knn_results_25[2])
-
-        if avg_f1_25 > best_f1_25:
-            best_f1_25 = avg_f1_25
-            best_k_25 = k
+    k = 58  # As per task 1
+    knn_model = KNNWithMeans(
+        k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
+    )
+    knn_results_25 = evaluate_model(knn_model, train_set, test_set, N_list=N_list)
+    avg_f1_25 = np.mean(knn_results_25[2])
 
     print(
-        f"Best k for KNN model with 25% missing ratings: {best_k_25} with F1 Score: {best_f1_25}"
+        f"Best k for KNN model with 25% missing ratings: {k} with F1 Score: {avg_f1_25}"
     )
 
     svd_model = SVD(random_state=3)
     svd_results_25 = evaluate_model(svd_model, train_set, test_set, N_list=N_list)
 
     # 75% missing ratings
-    train_set, test_set = train_test_split(data, test_size=0.75, random_state=22)
+    train_set, test_set = train_test_split(data, test_size=0.75, random_state=42)
 
-    # Best K
-    best_k_75 = None
-    best_f1_75 = 0
-    for k in range(1, 101, 5):
-        knn_model = KNNWithMeans(
-            k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
-        )
-        knn_results_75 = evaluate_model(knn_model, train_set, test_set, N_list=N_list)
-        avg_f1_75 = np.mean(knn_results_75[2])
-
-        if avg_f1_75 > best_f1_75:
-            best_f1_75 = avg_f1_75
-            best_k_75 = k
+    k = 55  # As per task 1
+    knn_model = KNNWithMeans(
+        k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
+    )
+    knn_results_75 = evaluate_model(knn_model, train_set, test_set, N_list=N_list)
+    avg_f1_75 = np.mean(knn_results_75[2])
 
     print(
-        f"Best k for KNN model with 75% missing ratings: {best_k_75} with F1 Score: {best_f1_75}"
+        f"Best k for KNN model with 75% missing ratings: {k} with F1 Score: {avg_f1_75}"
     )
 
     svd_model = SVD(random_state=3)
     svd_results_75 = evaluate_model(svd_model, train_set, test_set, N_list=N_list)
 
-    # Plot results for both 25% and 75% missing ratings
     plot_results(knn_results_25, knn_results_75, N_list)
     plot_results(svd_results_25, svd_results_75, N_list)
 
