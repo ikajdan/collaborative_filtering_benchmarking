@@ -90,14 +90,13 @@ def main():
     data = Dataset.load_from_file("./ml-100k/u.data", reader=reader)
     # data = Dataset.load_builtin("ml-100k")
 
-    # Metrics storage for both split cases
+    test_sizes = [0.25, 0.75]
     metrics_25 = {"SVD": [], "KNN": []}
     metrics_75 = {"SVD": [], "KNN": []}
 
-    for test_size, metrics in [(0.25, metrics_25), (0.75, metrics_75)]:
-        # Split dataset based on the specified test size
+    for test_size, metrics in zip(test_sizes, [metrics_25, metrics_75]):
         train_set, test_set = train_test_split(
-            data, test_size=test_size, random_state=22
+            data, test_size=test_size, random_state=42
         )
 
         # SVD Model Evaluation
@@ -115,7 +114,6 @@ def main():
         )
         metrics["KNN"] = [mae_knn, pre_knn, recall_knn, f1_knn]
 
-    # Plot results
     plot_comparison_metrics(metrics_25, metrics_75)
 
 
