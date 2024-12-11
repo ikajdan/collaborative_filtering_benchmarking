@@ -56,8 +56,8 @@ The MAE is consistently lower for the 25% missing ratings case across all K valu
 
 For both sparsity levels, the MAE decreases as K increases, reaching a minimum before leveling off. For this dataset the optimal K values are:
 
-- 25% missing ratings: 22 with MAE equal to 0.779.
-- 75% missing ratings: 24 with MAE equal to 0.822.
+- 25% missing ratings: 58 with MAE equal to 0.7504.
+- 75% missing ratings: 55 with MAE equal to 0.7885.
 
 ## Task 2
 
@@ -92,11 +92,6 @@ In both cases, 25% and 75% missing ratings, Funk SVD outperforms K-NN. This sugg
 ---
 
 As N increases, precision decreases while recall remains high. With higher N, the model recommends more items, which increases recall (capturing more relevant items) but reduces precision (introducing more irrelevant items). For both 25% and 75% missing ratings, recall stays high, indicating that relevant items are mostly retrieved, while precision drops with larger N. The F1 score reflects this trade-off, peaking at smaller N and decreasing as N grows, particularly under higher sparsity. Both K-NN and SVD models show similar performance, suggesting that their predictive capabilities are comparable in this scenario.
-
-Best K for K-NN model:
-
-- 25% missing ratings: 45 with F1 Score equal to 0.426.
-- 75% missing ratings: 50 with F1 Score: equal to 0.538.
 
 <br>
 <div align="center">
