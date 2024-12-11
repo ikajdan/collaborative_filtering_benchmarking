@@ -100,18 +100,14 @@ def main():
         )
 
         # SVD Model Evaluation
-        algo_svd = SVD(random_state=3)
-        mae_svd, pre_svd, recall_svd, f1_svd = evaluate_model(
-            algo_svd, train_set, test_set
-        )
+        svd = SVD(random_state=3)
+        mae_svd, pre_svd, recall_svd, f1_svd = evaluate_model(svd, train_set, test_set)
         metrics["SVD"] = [mae_svd, pre_svd, recall_svd, f1_svd]
 
         # KNN Model Evaluation
         sim_options_knn = {"name": "pearson", "user_based": True}
-        algo_knn = KNNWithMeans(k=10, sim_options=sim_options_knn, verbose=False)
-        mae_knn, pre_knn, recall_knn, f1_knn = evaluate_model(
-            algo_knn, train_set, test_set
-        )
+        knn = KNNWithMeans(k=10, sim_options=sim_options_knn, verbose=False)
+        mae_knn, pre_knn, recall_knn, f1_knn = evaluate_model(knn, train_set, test_set)
         metrics["KNN"] = [mae_knn, pre_knn, recall_knn, f1_knn]
 
     plot_comparison_metrics(metrics_25, metrics_75)

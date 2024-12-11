@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
 from surprise import SVD, Dataset, KNNWithMeans, Reader
 from surprise.model_selection import train_test_split
@@ -27,7 +26,7 @@ def precision_recall_at_n(predictions, n=10, threshold=3.5):
     return precisions, recalls
 
 
-def evaluate_model(model, trainset, testset, N_list=range(10, 101, 5)):
+def evaluate_model(model, trainset, testset, n_list=range(10, 101, 5)):
     """
     Evaluate a model using precision, recall, and F1-score for different N values.
     """
@@ -36,7 +35,7 @@ def evaluate_model(model, trainset, testset, N_list=range(10, 101, 5)):
 
     precision_list, recall_list, f1_list = [], [], []
 
-    for n in N_list:
+    for n in n_list:
         precisions, recalls = precision_recall_at_n(predictions, n=n, threshold=4)
         avg_precision = sum(prec for prec in precisions.values()) / len(precisions)
         avg_recall = sum(rec for rec in recalls.values()) / len(recalls)
@@ -49,7 +48,7 @@ def evaluate_model(model, trainset, testset, N_list=range(10, 101, 5)):
     return precision_list, recall_list, f1_list
 
 
-def plot_results(results_25, results_75, N_list):
+def plot_results(results_25, results_75, n_list):
     """
     Plot precision, recall, and F1 scores for both 25% and 75% missing ratings.
     """
@@ -62,10 +61,10 @@ def plot_results(results_25, results_75, N_list):
     _, axes = plt.subplots(1, 3, figsize=(18, 6))
 
     axes[0].plot(
-        N_list, precision_list_25, marker="o", color=palette[0], label="Precision (25%)"
+        n_list, precision_list_25, marker="o", color=palette[0], label="Precision (25%)"
     )
     axes[0].plot(
-        N_list, precision_list_75, marker="s", color=palette[1], label="Precision (75%)"
+        n_list, precision_list_75, marker="s", color=palette[1], label="Precision (75%)"
     )
     axes[0].set_title("Precision at N", fontsize=14)
     axes[0].set_xlabel("N", fontsize=12)
@@ -74,10 +73,10 @@ def plot_results(results_25, results_75, N_list):
     axes[0].grid(True)
 
     axes[1].plot(
-        N_list, recall_list_25, marker="o", color=palette[2], label="Recall (25%)"
+        n_list, recall_list_25, marker="o", color=palette[2], label="Recall (25%)"
     )
     axes[1].plot(
-        N_list, recall_list_75, marker="s", color=palette[3], label="Recall (75%)"
+        n_list, recall_list_75, marker="s", color=palette[3], label="Recall (75%)"
     )
     axes[1].set_title("Recall at N", fontsize=14)
     axes[1].set_xlabel("N", fontsize=12)
@@ -86,10 +85,10 @@ def plot_results(results_25, results_75, N_list):
     axes[1].grid(True)
 
     axes[2].plot(
-        N_list, f1_list_25, marker="o", color=palette[4], label="F1 Score (25%)"
+        n_list, f1_list_25, marker="o", color=palette[4], label="F1 Score (25%)"
     )
     axes[2].plot(
-        N_list, f1_list_75, marker="s", color=palette[5], label="F1 Score (75%)"
+        n_list, f1_list_75, marker="s", color=palette[5], label="F1 Score (75%)"
     )
     axes[2].set_title("F1 Score at N", fontsize=14)
     axes[2].set_xlabel("N", fontsize=12)
@@ -116,18 +115,14 @@ def main():
             data, test_size=test_size, random_state=42
         )
 
-        knn_model = KNNWithMeans(
+        knn = KNNWithMeans(
             k=k, sim_options={"name": "pearson", "user_based": True}, verbose=False
         )
-        knn_results = evaluate_model(knn_model, train_set, test_set, N_list=n_list)
+        knn_results = evaluate_model(knn, train_set, test_set, n_list=n_list)
         results["knn"][test_size] = knn_results
-        avg_f1_knn = np.mean(knn_results[2])
-        print(
-            f"Best k for KNN model with {int(test_size * 100)}% missing ratings: {k} with F1 Score: {avg_f1_knn}"
-        )
 
         svd_model = SVD(random_state=3)
-        svd_results = evaluate_model(svd_model, train_set, test_set, N_list=n_list)
+        svd_results = evaluate_model(svd_model, train_set, test_set, n_list=n_list)
         results["svd"][test_size] = svd_results
 
     plot_results(results["knn"][0.25], results["knn"][0.75], n_list)

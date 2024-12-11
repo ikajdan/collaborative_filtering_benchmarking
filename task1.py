@@ -39,8 +39,8 @@ def main():
     # data = Dataset.load_builtin("ml-100k")
 
     test_sizes = [0.25, 0.75]
-    mae_results = {0.25: [], 0.75: []}
     k_values = range(1, 101)
+    mae_results = {0.25: [], 0.75: []}
 
     for test_size in test_sizes:
         train_set, test_set = train_test_split(
@@ -48,9 +48,9 @@ def main():
         )
 
         for k in k_values:
-            algo = KNNWithMeans(k=k, sim_options={"user_based": True})
-            algo.fit(train_set)
-            predictions = algo.test(test_set)
+            knn = KNNWithMeans(k=k, sim_options={"user_based": True}, verbose=False)
+            knn.fit(train_set)
+            predictions = knn.test(test_set)
             mae = accuracy.mae(predictions, verbose=False)
             mae_results[test_size].append(mae)
 
