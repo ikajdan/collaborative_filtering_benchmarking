@@ -40,7 +40,7 @@ def main():
 
     test_sizes = [0.25, 0.75]
     mae_results = {0.25: [], 0.75: []}
-    k_values = range(1, 51)
+    k_values = range(1, 101)
 
     for test_size in test_sizes:
         train_set, test_set = train_test_split(
